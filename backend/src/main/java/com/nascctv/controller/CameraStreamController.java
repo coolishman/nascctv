@@ -25,7 +25,7 @@ public class CameraStreamController {
     }
 
     @GetMapping
-    public List<CameraStreamResponse> listStreams(@PathVariable Long cameraId) {
+    public List<CameraStreamResponse> listStreams(@PathVariable("cameraId") Long cameraId) {
         return cameraStreamService.listByCamera(cameraId).stream()
             .map(CameraStreamController::toResponse)
             .toList();
@@ -34,7 +34,7 @@ public class CameraStreamController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public CameraStreamResponse createStream(
-        @PathVariable Long cameraId,
+        @PathVariable("cameraId") Long cameraId,
         @Valid @RequestBody CameraStreamRequest request
     ) {
         CameraStreamRequest normalizedRequest = new CameraStreamRequest(

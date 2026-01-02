@@ -28,7 +28,7 @@ public class JwtService {
         @Value("${security.jwt.expiration-minutes}") long expirationMinutes
     ) {
         if ("change-me-to-a-strong-secret-key".equals(secret)) {
-
+            logger.warn("JWT secret is using the default placeholder value; configure a strong secret.");
         }
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.issuer = issuer;

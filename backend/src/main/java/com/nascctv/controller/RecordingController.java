@@ -28,7 +28,7 @@ public class RecordingController {
 
     @GetMapping
     public List<RecordingResponse> listRecordings(
-        @RequestParam Long cameraId,
+        @RequestParam("cameraId") Long cameraId,
         @AuthenticationPrincipal UserPrincipal principal
     ) {
         return recordingService.listByCamera(cameraId, principal).stream()

@@ -41,13 +41,13 @@ public class CameraController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public CameraResponse updateCamera(@PathVariable Long id, @Valid @RequestBody CameraRequest request) {
+    public CameraResponse updateCamera(@PathVariable("id") Long id, @Valid @RequestBody CameraRequest request) {
         return toResponse(cameraService.updateCamera(id, request));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteCamera(@PathVariable Long id) {
+    public void deleteCamera(@PathVariable("id") Long id) {
         cameraService.deleteCamera(id);
     }
 
