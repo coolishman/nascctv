@@ -57,12 +57,7 @@ public class VideoWallService {
             .map(GrantedAuthority::getAuthority)
             .anyMatch(authority -> authority.equals("ROLE_ADMIN"));
 
-        Set<Long> allowedCameraIds = null;
-        if (!isAdmin) {
-            User user = userMapper.findByUsername(principal.getUsername())
-                .orElseThrow(() -> new IllegalStateException("User not found"));
-            allowedCameraIds = Set.copyOf(userCameraPermissionMapper.findCameraIdsByUserId(user.getId()));
-        }
+        Set<Long> allowedCameraIds = isAdmin ? null : loadAllowedCameraIds(principal);
 
         List<WallTile> tiles = wallTileMapper.findByWallId(wallId);
         Map<Long, List<CameraPreview>> playlists = wallTileChannelMapper.findChannelsByWallId(wallId).stream()
@@ -90,8 +85,9 @@ public class VideoWallService {
             }
 
             if (allowedCameraIds != null) {
+                Set<Long> allowedCameraIdsFinal = allowedCameraIds;
                 playlist = playlist.stream()
-                    .filter(camera -> allowedCameraIds.contains(camera.id()))
+                    .filter(camera -> allowedCameraIdsFinal.contains(camera.id()))
                     .toList();
             }
 
@@ -115,5 +111,11 @@ public class VideoWallService {
             .collect(Collectors.toList());
 
         return new VideoWallResponse(wall.getId(), wall.getName(), wall.getDescription(), responseTiles);
+    }
+
+    private Set<Long> loadAllowedCameraIds(UserPrincipal principal) {
+        User user = userMapper.findByUsername(principal.getUsername())
+            .orElseThrow(() -> new IllegalStateException("User not found"));
+        return Set.copyOf(userCameraPermissionMapper.findCameraIdsByUserId(user.getId()));
     }
 }
