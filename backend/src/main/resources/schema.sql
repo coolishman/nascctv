@@ -45,9 +45,7 @@ CREATE TABLE IF NOT EXISTS recordings (
   CONSTRAINT fk_recordings_camera FOREIGN KEY (camera_id) REFERENCES cameras(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_cameras_status ON cameras(status);
-CREATE INDEX IF NOT EXISTS idx_camera_streams_camera_id ON camera_streams(camera_id);
-CREATE INDEX IF NOT EXISTS idx_recordings_camera_id_started_at ON recordings(camera_id, started_at);
+
 
 CREATE TABLE IF NOT EXISTS user_camera_permissions (
   user_id BIGINT NOT NULL,
@@ -88,6 +86,4 @@ CREATE TABLE IF NOT EXISTS wall_tile_channels (
   CONSTRAINT fk_wall_tile_channels_camera FOREIGN KEY (camera_id) REFERENCES cameras(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_permissions_user_id ON user_camera_permissions(user_id);
-CREATE INDEX IF NOT EXISTS idx_wall_tiles_wall_id ON wall_tiles(wall_id);
-CREATE INDEX IF NOT EXISTS idx_wall_tile_channels_tile_id ON wall_tile_channels(tile_id);
+
