@@ -3,9 +3,11 @@ package com.nascctv.controller;
 import com.nascctv.dto.CameraRequest;
 import com.nascctv.dto.CameraResponse;
 import com.nascctv.model.Camera;
+import com.nascctv.security.UserPrincipal;
 import com.nascctv.service.CameraService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,8 +29,8 @@ public class CameraController {
     }
 
     @GetMapping
-    public List<CameraResponse> listCameras() {
-        return cameraService.listCameras().stream().map(CameraController::toResponse).toList();
+    public List<CameraResponse> listCameras(@AuthenticationPrincipal UserPrincipal principal) {
+        return cameraService.listCameras(principal).stream().map(CameraController::toResponse).toList();
     }
 
     @PostMapping
