@@ -24,6 +24,9 @@ public class JwtService {
         @Value("${security.jwt.issuer}") String issuer,
         @Value("${security.jwt.expiration-minutes}") long expirationMinutes
     ) {
+        if ("change-me-to-a-strong-secret-key".equals(secret)) {
+            throw new IllegalStateException("JWT secret must be configured with a strong value.");
+        }
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.issuer = issuer;
         this.expirationMinutes = expirationMinutes;
