@@ -209,7 +209,9 @@
         </div>
         <footer>
           <button class="secondary" @click="handleCloseModal">关闭</button>
-          <button class="primary" @click="handleCloseModal">保存</button>
+          <button class="primary" @click="handleSaveSettings" :disabled="!isAuthenticated">
+            保存
+          </button>
         </footer>
       </div>
     </div>
@@ -229,8 +231,10 @@ import {
   deleteCamera,
   fetchCameras,
   fetchRecordings,
+  fetchSettings,
   fetchVideoWall,
-  updateCamera
+  updateCamera,
+  updateSettings
 } from './services/api';
 
 const cameras = ref([]);
@@ -381,6 +385,32 @@ const handleRefreshAlerts = () => {
 const handleOpenSettings = () => {
   actionMessage.value = '系统设置已打开';
   showSettingsModal.value = true;
+  if (!isAuthenticated.value) {
+    return;
+  }
+  fetchSettings()
+    .then((data) => {
+      settings.retentionDays = data.retentionDays ?? settings.retentionDays;
+      settings.alertSound = data.alertSound ?? settings.alertSound;
+      settings.autoRotate = data.autoRotate ?? settings.autoRotate;
+    })
+    .catch(() => {
+      actionMessage.value = '加载设置失败，请检查权限或网络连接。';
+    });
+};
+
+const handleSaveSettings = async () => {
+  try {
+    await updateSettings({
+      retentionDays: settings.retentionDays,
+      alertSound: settings.alertSound,
+      autoRotate: settings.autoRotate
+    });
+    actionMessage.value = '系统设置已保存';
+    showSettingsModal.value = false;
+  } catch (error) {
+    actionMessage.value = '保存设置失败，请检查权限或网络连接。';
+  }
 };
 
 const handleSaveDevice = async () => {
@@ -409,6 +439,15 @@ const handleCloseModal = () => {
 onMounted(() => {
   if (isAuthenticated.value) {
     refreshCameras();
+    fetchSettings()
+      .then((data) => {
+        settings.retentionDays = data.retentionDays ?? settings.retentionDays;
+        settings.alertSound = data.alertSound ?? settings.alertSound;
+        settings.autoRotate = data.autoRotate ?? settings.autoRotate;
+      })
+      .catch(() => {
+        actionMessage.value = '加载设置失败，请检查权限或网络连接。';
+      });
   }
 });
 </script>
