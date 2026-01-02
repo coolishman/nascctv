@@ -46,7 +46,27 @@ export const fetchVideoWall = async (wallId) => {
   return response.data;
 };
 
+export const fetchSettings = async () => {
+  const response = await api.get('/settings');
+  return response.data;
+};
+
+export const updateSettings = async (payload) => {
+  const response = await api.put('/settings', payload);
+  return response.data;
+};
+
 export const createCamera = async (payload) => {
   const response = await api.post('/cameras', payload);
+  return response.data;
+};
+
+export const updateCamera = async (id, payload) => {
+  const response = await api.put(`/cameras/${id}`, payload);
+  return response.data;
+};
+
+export const deleteCamera = async (id) => {
+  const response = await api.delete(`/cameras/${id}`);
   return response.data;
 };

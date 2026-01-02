@@ -39,6 +39,7 @@
             :cameras="cameras"
             @preview="handlePreview"
             @configure="handleConfigure"
+            @delete="handleDelete"
           />
         </section>
 
@@ -70,6 +71,7 @@
           :cameras="cameras"
           @preview="handlePreview"
           @configure="handleConfigure"
+          @delete="handleDelete"
         />
       </section>
     </main>
@@ -207,7 +209,9 @@
         </div>
         <footer>
           <button class="secondary" @click="handleCloseModal">关闭</button>
-          <button class="primary" @click="handleCloseModal">保存</button>
+          <button class="primary" @click="handleSaveSettings" :disabled="!isAuthenticated">
+            保存
+          </button>
         </footer>
       </div>
     </div>
@@ -222,7 +226,16 @@ import CameraList from './components/CameraList.vue';
 import RecordingList from './components/RecordingList.vue';
 import StatsCard from './components/StatsCard.vue';
 import TVWall from './components/TVWall.vue';
-import { createCamera, fetchCameras, fetchRecordings, fetchVideoWall } from './services/api';
+import {
+  createCamera,
+  deleteCamera,
+  fetchCameras,
+  fetchRecordings,
+  fetchSettings,
+  fetchVideoWall,
+  updateCamera,
+  updateSettings
+} from './services/api';
 
 const cameras = ref([]);
 const recordings = ref([]);
@@ -329,6 +342,19 @@ const handleConfigure = (camera) => {
   showDeviceModal.value = true;
 };
 
+const handleDelete = async (camera) => {
+  if (!window.confirm(`确认删除 ${camera.name} 吗？`)) {
+    return;
+  }
+  try {
+    await deleteCamera(camera.id);
+    actionMessage.value = '设备已删除';
+    refreshCameras();
+  } catch (error) {
+    actionMessage.value = '删除失败，请检查权限或网络连接。';
+  }
+};
+
 const handleNewDevice = () => {
   actionMessage.value = '进入新建设备流程';
   selectedCamera.value = null;
@@ -359,12 +385,43 @@ const handleRefreshAlerts = () => {
 const handleOpenSettings = () => {
   actionMessage.value = '系统设置已打开';
   showSettingsModal.value = true;
+  if (!isAuthenticated.value) {
+    return;
+  }
+  fetchSettings()
+    .then((data) => {
+      settings.retentionDays = data.retentionDays ?? settings.retentionDays;
+      settings.alertSound = data.alertSound ?? settings.alertSound;
+      settings.autoRotate = data.autoRotate ?? settings.autoRotate;
+    })
+    .catch(() => {
+      actionMessage.value = '加载设置失败，请检查权限或网络连接。';
+    });
+};
+
+const handleSaveSettings = async () => {
+  try {
+    await updateSettings({
+      retentionDays: settings.retentionDays,
+      alertSound: settings.alertSound,
+      autoRotate: settings.autoRotate
+    });
+    actionMessage.value = '系统设置已保存';
+    showSettingsModal.value = false;
+  } catch (error) {
+    actionMessage.value = '保存设置失败，请检查权限或网络连接。';
+  }
 };
 
 const handleSaveDevice = async () => {
   try {
-    await createCamera({ ...deviceForm });
-    actionMessage.value = '设备已保存';
+    if (selectedCamera.value?.id) {
+      await updateCamera(selectedCamera.value.id, { ...deviceForm });
+      actionMessage.value = '设备已更新';
+    } else {
+      await createCamera({ ...deviceForm });
+      actionMessage.value = '设备已保存';
+    }
     showDeviceModal.value = false;
     refreshCameras();
   } catch (error) {
@@ -376,11 +433,21 @@ const handleCloseModal = () => {
   showDeviceModal.value = false;
   showPreviewModal.value = false;
   showSettingsModal.value = false;
+  actionMessage.value = '';
 };
 
 onMounted(() => {
   if (isAuthenticated.value) {
     refreshCameras();
+    fetchSettings()
+      .then((data) => {
+        settings.retentionDays = data.retentionDays ?? settings.retentionDays;
+        settings.alertSound = data.alertSound ?? settings.alertSound;
+        settings.autoRotate = data.autoRotate ?? settings.autoRotate;
+      })
+      .catch(() => {
+        actionMessage.value = '加载设置失败，请检查权限或网络连接。';
+      });
   }
 });
 </script>
