@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/cameras/{cameraId}/streams")
+@RequestMapping({"/api/cameras/{cameraId}/streams", "/cameras/{cameraId}/streams"})
 public class CameraStreamController {
     private final CameraStreamService cameraStreamService;
 

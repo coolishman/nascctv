@@ -71,7 +71,6 @@
           @preview="handlePreview"
           @configure="handleConfigure"
         />
-        <p v-else>登录后可管理摄像头。</p>
       </section>
     </main>
     <main class="content wall-content" v-else-if="view === 'wall'">
@@ -80,16 +79,11 @@
       <template v-if="isAuthenticated">
         <TVWall :wall="wall" />
       </template>
-      <section v-else class="section-card">
-        <h2>请先登录</h2>
-        <p>登录后可查看电视墙内容。</p>
-      </section>
     </main>
     <main class="content" v-else-if="view === 'alerts'">
       <section class="section-card">
         <h2>告警中心</h2>
         <p v-if="isAuthenticated">暂无告警数据，请检查摄像头状态或网络连接。</p>
-        <p v-else>登录后可查看告警信息。</p>
         <button class="secondary" @click="handleRefreshAlerts" :disabled="!isAuthenticated">
           刷新告警
         </button>
@@ -105,7 +99,6 @@
       <section class="section-card">
         <h2>系统设置</h2>
         <p v-if="isAuthenticated">在这里管理存储策略、用户权限与系统参数。</p>
-        <p v-else>登录后可查看系统设置。</p>
         <button class="secondary" @click="handleOpenSettings" :disabled="!isAuthenticated">
           打开设置
         </button>
@@ -297,6 +290,10 @@ const handleLogin = (payload) => {
 };
 
 const handleNavigate = (target) => {
+  if (!isAuthenticated.value && target !== 'dashboard') {
+    view.value = 'dashboard';
+    return;
+  }
   view.value = target;
   actionMessage.value = '';
   if (target === 'wall' && !wall.value.tiles?.length) {

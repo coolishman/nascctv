@@ -3,9 +3,11 @@ package com.nascctv.controller;
 import com.nascctv.dto.RecordingRequest;
 import com.nascctv.dto.RecordingResponse;
 import com.nascctv.model.Recording;
+import com.nascctv.security.UserPrincipal;
 import com.nascctv.service.RecordingService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/recordings")
+@RequestMapping({"/api/recordings", "/recordings"})
 public class RecordingController {
     private final RecordingService recordingService;
 
@@ -25,8 +27,11 @@ public class RecordingController {
     }
 
     @GetMapping
-    public List<RecordingResponse> listRecordings(@RequestParam Long cameraId) {
-        return recordingService.listByCamera(cameraId).stream()
+    public List<RecordingResponse> listRecordings(
+        @RequestParam Long cameraId,
+        @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return recordingService.listByCamera(cameraId, principal).stream()
             .map(RecordingController::toResponse)
             .toList();
     }
