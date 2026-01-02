@@ -20,7 +20,7 @@ public class VideoWallController {
 
     @GetMapping("/{wallId}")
     public VideoWallResponse getWall(
-        @PathVariable Long wallId,
+        @PathVariable("wallId") Long wallId,
         @AuthenticationPrincipal UserPrincipal principal
     ) {
         return videoWallService.getWall(wallId, principal);

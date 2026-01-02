@@ -39,6 +39,7 @@
             :cameras="cameras"
             @preview="handlePreview"
             @configure="handleConfigure"
+            @delete="handleDelete"
           />
         </section>
 
@@ -70,8 +71,8 @@
           :cameras="cameras"
           @preview="handlePreview"
           @configure="handleConfigure"
+          @delete="handleDelete"
         />
-        <p v-else>登录后可管理摄像头。</p>
       </section>
     </main>
     <main class="content wall-content" v-else-if="view === 'wall'">
@@ -80,16 +81,11 @@
       <template v-if="isAuthenticated">
         <TVWall :wall="wall" />
       </template>
-      <section v-else class="section-card">
-        <h2>请先登录</h2>
-        <p>登录后可查看电视墙内容。</p>
-      </section>
     </main>
     <main class="content" v-else-if="view === 'alerts'">
       <section class="section-card">
         <h2>告警中心</h2>
         <p v-if="isAuthenticated">暂无告警数据，请检查摄像头状态或网络连接。</p>
-        <p v-else>登录后可查看告警信息。</p>
         <button class="secondary" @click="handleRefreshAlerts" :disabled="!isAuthenticated">
           刷新告警
         </button>
@@ -105,7 +101,6 @@
       <section class="section-card">
         <h2>系统设置</h2>
         <p v-if="isAuthenticated">在这里管理存储策略、用户权限与系统参数。</p>
-        <p v-else>登录后可查看系统设置。</p>
         <button class="secondary" @click="handleOpenSettings" :disabled="!isAuthenticated">
           打开设置
         </button>
@@ -229,7 +224,14 @@ import CameraList from './components/CameraList.vue';
 import RecordingList from './components/RecordingList.vue';
 import StatsCard from './components/StatsCard.vue';
 import TVWall from './components/TVWall.vue';
-import { createCamera, fetchCameras, fetchRecordings, fetchVideoWall } from './services/api';
+import {
+  createCamera,
+  deleteCamera,
+  fetchCameras,
+  fetchRecordings,
+  fetchVideoWall,
+  updateCamera
+} from './services/api';
 
 const cameras = ref([]);
 const recordings = ref([]);
@@ -297,6 +299,10 @@ const handleLogin = (payload) => {
 };
 
 const handleNavigate = (target) => {
+  if (!isAuthenticated.value && target !== 'dashboard') {
+    view.value = 'dashboard';
+    return;
+  }
   view.value = target;
   actionMessage.value = '';
   if (target === 'wall' && !wall.value.tiles?.length) {
@@ -330,6 +336,19 @@ const handleConfigure = (camera) => {
     location: camera.location || ''
   });
   showDeviceModal.value = true;
+};
+
+const handleDelete = async (camera) => {
+  if (!window.confirm(`确认删除 ${camera.name} 吗？`)) {
+    return;
+  }
+  try {
+    await deleteCamera(camera.id);
+    actionMessage.value = '设备已删除';
+    refreshCameras();
+  } catch (error) {
+    actionMessage.value = '删除失败，请检查权限或网络连接。';
+  }
 };
 
 const handleNewDevice = () => {
@@ -366,8 +385,13 @@ const handleOpenSettings = () => {
 
 const handleSaveDevice = async () => {
   try {
-    await createCamera({ ...deviceForm });
-    actionMessage.value = '设备已保存';
+    if (selectedCamera.value?.id) {
+      await updateCamera(selectedCamera.value.id, { ...deviceForm });
+      actionMessage.value = '设备已更新';
+    } else {
+      await createCamera({ ...deviceForm });
+      actionMessage.value = '设备已保存';
+    }
     showDeviceModal.value = false;
     refreshCameras();
   } catch (error) {
@@ -379,6 +403,7 @@ const handleCloseModal = () => {
   showDeviceModal.value = false;
   showPreviewModal.value = false;
   showSettingsModal.value = false;
+  actionMessage.value = '';
 };
 
 onMounted(() => {

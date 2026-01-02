@@ -11,6 +11,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
@@ -45,6 +47,9 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest request) {
+        if (userMapper.findByUsername(request.username()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists.");
+        }
         User user = new User(null, request.username(), passwordEncoder.encode(request.password()), "USER", null, null);
         userMapper.insert(user);
         String token = jwtService.generateToken(user.getUsername(), user.getRole());
