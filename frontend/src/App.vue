@@ -70,6 +70,12 @@
         <button class="secondary" @click="handleRefreshAlerts" :disabled="!isAuthenticated">
           刷新告警
         </button>
+        <ul v-if="isAuthenticated && alertItems.length" class="alert-list">
+          <li v-for="alert in alertItems" :key="alert.id">
+            <strong>{{ alert.message }}</strong>
+            <span>{{ alert.location }}</span>
+          </li>
+        </ul>
       </section>
     </main>
     <main class="content" v-else>
@@ -82,6 +88,113 @@
         </button>
       </section>
     </main>
+
+    <div v-if="showDeviceModal" class="modal">
+      <div class="modal-content">
+        <header>
+          <h3>{{ selectedCamera ? '配置摄像头' : '新建设备' }}</h3>
+          <button class="ghost" @click="handleCloseModal">关闭</button>
+        </header>
+        <div class="modal-grid">
+          <label>
+            名称
+            <input v-model="deviceForm.name" placeholder="摄像头名称" />
+          </label>
+          <label>
+            协议
+            <select v-model="deviceForm.protocol">
+              <option>ONVIF</option>
+              <option>RTSP</option>
+              <option>GB/T 28181</option>
+            </select>
+          </label>
+          <label>
+            厂商
+            <input v-model="deviceForm.vendor" placeholder="厂商" />
+          </label>
+          <label>
+            型号
+            <input v-model="deviceForm.model" placeholder="型号" />
+          </label>
+          <label>
+            认证方式
+            <select v-model="deviceForm.authType">
+              <option>BASIC</option>
+              <option>DIGEST</option>
+              <option>TOKEN</option>
+            </select>
+          </label>
+          <label>
+            状态
+            <select v-model="deviceForm.status">
+              <option>online</option>
+              <option>offline</option>
+            </select>
+          </label>
+          <label class="full">
+            流地址
+            <input v-model="deviceForm.streamUrl" placeholder="rtsp://..." />
+          </label>
+          <label class="full">
+            位置
+            <input v-model="deviceForm.location" placeholder="位置" />
+          </label>
+        </div>
+        <footer>
+          <button class="secondary" @click="handleCloseModal">取消</button>
+          <button class="primary" @click="handleSaveDevice" :disabled="!isAuthenticated">
+            保存
+          </button>
+        </footer>
+      </div>
+    </div>
+
+    <div v-if="showPreviewModal" class="modal">
+      <div class="modal-content">
+        <header>
+          <h3>视频预览</h3>
+          <button class="ghost" @click="handleCloseModal">关闭</button>
+        </header>
+        <div class="preview-body">
+          <p>{{ selectedCamera?.name }}</p>
+          <p class="stream">{{ selectedCamera?.streamUrl }}</p>
+          <div class="preview-placeholder">预览窗口占位</div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showSettingsModal" class="modal">
+      <div class="modal-content">
+        <header>
+          <h3>系统设置</h3>
+          <button class="ghost" @click="handleCloseModal">关闭</button>
+        </header>
+        <div class="modal-grid">
+          <label>
+            录像留存天数
+            <input type="number" v-model.number="settings.retentionDays" />
+          </label>
+          <label>
+            告警提示音
+            <select v-model="settings.alertSound">
+              <option :value="true">开启</option>
+              <option :value="false">关闭</option>
+            </select>
+          </label>
+          <label>
+            电视墙自动轮播
+            <select v-model="settings.autoRotate">
+              <option :value="true">开启</option>
+              <option :value="false">关闭</option>
+            </select>
+          </label>
+        </div>
+        <footer>
+          <button class="secondary" @click="handleCloseModal">关闭</button>
+          <button class="primary" @click="handleCloseModal">保存</button>
+        </footer>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -93,7 +206,7 @@ import CameraList from './components/CameraList.vue';
 import RecordingList from './components/RecordingList.vue';
 import StatsCard from './components/StatsCard.vue';
 import TVWall from './components/TVWall.vue';
-import { fetchCameras, fetchRecordings, fetchVideoWall } from './services/api';
+import { createCamera, fetchCameras, fetchRecordings, fetchVideoWall } from './services/api';
 
 const cameras = ref([]);
 const recordings = ref([]);
@@ -107,6 +220,26 @@ const metrics = reactive({
 });
 const errorMessage = ref('');
 const actionMessage = ref('');
+const showDeviceModal = ref(false);
+const showPreviewModal = ref(false);
+const showSettingsModal = ref(false);
+const selectedCamera = ref(null);
+const deviceForm = reactive({
+  name: '',
+  protocol: 'RTSP',
+  vendor: '',
+  model: '',
+  authType: 'BASIC',
+  streamUrl: '',
+  status: 'online',
+  location: ''
+});
+const alertItems = ref([]);
+const settings = reactive({
+  retentionDays: 30,
+  alertSound: true,
+  autoRotate: true
+});
 
 const refreshCameras = async () => {
   errorMessage.value = '';
@@ -117,6 +250,13 @@ const refreshCameras = async () => {
     metrics.alerts = Math.max(1, Math.floor(cameras.value.length / 3));
     recordings.value = await fetchRecordings(cameras.value);
     wall.value = await fetchVideoWall(1);
+    alertItems.value = cameras.value
+      .filter((camera) => camera.status === 'offline')
+      .map((camera) => ({
+        id: camera.id,
+        message: `${camera.name} 当前离线，请检查网络或供电。`,
+        location: camera.location || '未配置位置'
+      }));
   } catch (error) {
     errorMessage.value = '无法连接后端服务，请检查数据库与接口配置。';
     cameras.value = [];
@@ -149,22 +289,73 @@ const handleNavigate = (target) => {
 
 const handlePreview = (camera) => {
   actionMessage.value = `正在预览：${camera.name}`;
+  selectedCamera.value = camera;
+  showPreviewModal.value = true;
 };
 
 const handleConfigure = (camera) => {
   actionMessage.value = `正在配置：${camera.name}`;
+  selectedCamera.value = camera;
+  Object.assign(deviceForm, {
+    name: camera.name,
+    protocol: camera.protocol,
+    vendor: camera.vendor || '',
+    model: camera.model || '',
+    authType: camera.authType || 'BASIC',
+    streamUrl: camera.streamUrl,
+    status: camera.status,
+    location: camera.location || ''
+  });
+  showDeviceModal.value = true;
 };
 
 const handleNewDevice = () => {
   actionMessage.value = '进入新建设备流程';
+  selectedCamera.value = null;
+  Object.assign(deviceForm, {
+    name: '',
+    protocol: 'RTSP',
+    vendor: '',
+    model: '',
+    authType: 'BASIC',
+    streamUrl: '',
+    status: 'online',
+    location: ''
+  });
+  showDeviceModal.value = true;
 };
 
 const handleRefreshAlerts = () => {
-  actionMessage.value = '告警已刷新（示例）';
+  actionMessage.value = '告警已刷新';
+  alertItems.value = cameras.value
+    .filter((camera) => camera.status === 'offline')
+    .map((camera) => ({
+      id: camera.id,
+      message: `${camera.name} 当前离线，请检查网络或供电。`,
+      location: camera.location || '未配置位置'
+    }));
 };
 
 const handleOpenSettings = () => {
-  actionMessage.value = '系统设置已打开（示例）';
+  actionMessage.value = '系统设置已打开';
+  showSettingsModal.value = true;
+};
+
+const handleSaveDevice = async () => {
+  try {
+    await createCamera({ ...deviceForm });
+    actionMessage.value = '设备已保存';
+    showDeviceModal.value = false;
+    refreshCameras();
+  } catch (error) {
+    actionMessage.value = '保存失败，请检查权限或网络连接。';
+  }
+};
+
+const handleCloseModal = () => {
+  showDeviceModal.value = false;
+  showPreviewModal.value = false;
+  showSettingsModal.value = false;
 };
 
 onMounted(() => {

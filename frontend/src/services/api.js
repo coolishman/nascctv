@@ -83,3 +83,8 @@ export const fetchVideoWall = async (wallId) => {
   const response = await api.get(`/walls/${wallId}`);
   return response.data;
 };
+
+export const createCamera = async (payload) => {
+  const response = await api.post('/cameras', payload);
+  return response.data;
+};
