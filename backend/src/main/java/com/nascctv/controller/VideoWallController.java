@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/walls")
+@RequestMapping({"/api/walls", "/walls"})
 public class VideoWallController {
     private final VideoWallService videoWallService;
 
