@@ -1,8 +1,9 @@
 <template>
   <div class="app">
-    <TopBar @navigate="handleNavigate" />
+    <TopBar @navigate="handleNavigate" @new-device="handleNewDevice" />
     <main class="content" v-if="view === 'dashboard'">
       <div v-if="errorMessage" class="error-banner">{{ errorMessage }}</div>
+      <div v-if="actionMessage" class="toast">{{ actionMessage }}</div>
       <section class="hero">
         <div>
           <p class="eyebrow">网络摄像头管理系统</p>
@@ -25,7 +26,11 @@
           <h2>摄像头资产概览</h2>
           <button class="primary" @click="refreshCameras">刷新列表</button>
         </div>
-        <CameraList :cameras="cameras" />
+        <CameraList
+          :cameras="cameras"
+          @preview="handlePreview"
+          @configure="handleConfigure"
+        />
       </section>
 
       <section class="storage">
@@ -38,18 +43,21 @@
     </main>
     <main class="content wall-content" v-else-if="view === 'wall'">
       <div v-if="errorMessage" class="error-banner dark">{{ errorMessage }}</div>
+      <div v-if="actionMessage" class="toast dark">{{ actionMessage }}</div>
       <TVWall :wall="wall" />
     </main>
     <main class="content" v-else-if="view === 'alerts'">
       <section class="section-card">
         <h2>告警中心</h2>
         <p>暂无告警数据，请检查摄像头状态或网络连接。</p>
+        <button class="secondary" @click="handleRefreshAlerts">刷新告警</button>
       </section>
     </main>
     <main class="content" v-else>
       <section class="section-card">
         <h2>系统设置</h2>
         <p>在这里管理存储策略、用户权限与系统参数。</p>
+        <button class="secondary" @click="handleOpenSettings">打开设置</button>
       </section>
     </main>
   </div>
@@ -75,6 +83,7 @@ const metrics = reactive({
   alerts: 0
 });
 const errorMessage = ref('');
+const actionMessage = ref('');
 
 const refreshCameras = async () => {
   errorMessage.value = '';
@@ -99,6 +108,7 @@ const handleLogin = () => {
 
 const handleNavigate = (target) => {
   view.value = target;
+  actionMessage.value = '';
   if (target === 'wall' && !wall.value.tiles?.length) {
     fetchVideoWall(1)
       .then((data) => {
@@ -108,6 +118,26 @@ const handleNavigate = (target) => {
         errorMessage.value = '无法加载电视墙数据，请检查后端服务。';
       });
   }
+};
+
+const handlePreview = (camera) => {
+  actionMessage.value = `正在预览：${camera.name}`;
+};
+
+const handleConfigure = (camera) => {
+  actionMessage.value = `正在配置：${camera.name}`;
+};
+
+const handleNewDevice = () => {
+  actionMessage.value = '进入新建设备流程';
+};
+
+const handleRefreshAlerts = () => {
+  actionMessage.value = '告警已刷新（示例）';
+};
+
+const handleOpenSettings = () => {
+  actionMessage.value = '系统设置已打开（示例）';
 };
 
 onMounted(() => {

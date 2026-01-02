@@ -13,6 +13,6 @@
       <button class="link" @click="$emit('navigate', 'alerts')">告警中心</button>
       <button class="link" @click="$emit('navigate', 'settings')">系统设置</button>
     </nav>
-    <button class="secondary">新建设备</button>
+    <button class="secondary" @click="$emit('new-device')">新建设备</button>
   </header>
 </template>

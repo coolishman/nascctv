@@ -27,8 +27,8 @@
         </div>
       </div>
       <div class="camera-actions">
-        <button class="secondary">预览</button>
-        <button class="ghost">配置</button>
+        <button class="secondary" @click="$emit('preview', camera)">预览</button>
+        <button class="ghost" @click="$emit('configure', camera)">配置</button>
       </div>
     </article>
   </div>
@@ -41,4 +41,6 @@ defineProps({
     default: () => []
   }
 });
+
+defineEmits(['preview', 'configure']);
 </script>

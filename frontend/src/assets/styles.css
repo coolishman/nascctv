@@ -392,6 +392,22 @@ button.ghost {
   color: #fecaca;
 }
 
+.toast {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #ecfdf3;
+  color: #027a48;
+  font-size: 13px;
+  border: 1px solid #abefc6;
+  width: fit-content;
+}
+
+.toast.dark {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
 .wall-content {
   background: #0b1220;
   color: #f8fafc;
