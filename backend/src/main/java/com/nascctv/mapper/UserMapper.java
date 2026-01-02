@@ -25,6 +25,9 @@ public interface UserMapper {
         """)
     List<User> findAll();
 
+    @Select("SELECT COUNT(*) FROM users")
+    int countUsers();
+
     @Insert("""
         INSERT INTO users (username, password_hash, role)
         VALUES (#{username}, #{passwordHash}, #{role})

@@ -1,7 +1,10 @@
 package com.nascctv.mapper;
 
 import com.nascctv.dto.CameraPreview;
+import com.nascctv.model.WallTileChannel;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -21,6 +24,13 @@ public interface WallTileChannelMapper {
         ORDER BY wtc.tile_id, wtc.order_index
         """)
     List<WallTileChannelView> findChannelsByWallId(Long wallId);
+
+    @Insert("""
+        INSERT INTO wall_tile_channels (tile_id, camera_id, order_index)
+        VALUES (#{tileId}, #{cameraId}, #{orderIndex})
+        """)
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    int insert(WallTileChannel channel);
 
     record WallTileChannelView(
         Long tileId,

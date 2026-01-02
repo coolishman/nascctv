@@ -20,6 +20,9 @@ public interface CameraMapper {
         """)
     List<Camera> findAll();
 
+    @Select("SELECT COUNT(*) FROM cameras")
+    int countCameras();
+
     @Select("""
         SELECT id, name, protocol, vendor, model, auth_type, stream_url, status, location, created_at
         FROM cameras

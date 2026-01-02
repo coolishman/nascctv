@@ -32,6 +32,13 @@ npm run dev
 
 后端启动时会执行 `backend/src/main/resources/schema.sql`，需提前创建 `nascctv` 数据库并配置账号密码。
 
+### 默认账户
+
+系统启动会自动创建默认管理员账号：
+
+- 用户名：`admin`
+- 密码：`admin`
+
 ## 录像存储说明
 
 示例后端提供录像登记接口 `/api/recordings`，用于记录录像文件的存储路径、格式、大小与留存周期。

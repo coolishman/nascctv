@@ -36,9 +36,21 @@
         <RecordingList :recordings="recordings" />
       </section>
     </main>
-    <main class="content wall-content" v-else>
+    <main class="content wall-content" v-else-if="view === 'wall'">
       <div v-if="errorMessage" class="error-banner dark">{{ errorMessage }}</div>
       <TVWall :wall="wall" />
+    </main>
+    <main class="content" v-else-if="view === 'alerts'">
+      <section class="section-card">
+        <h2>告警中心</h2>
+        <p>暂无告警数据，请检查摄像头状态或网络连接。</p>
+      </section>
+    </main>
+    <main class="content" v-else>
+      <section class="section-card">
+        <h2>系统设置</h2>
+        <p>在这里管理存储策略、用户权限与系统参数。</p>
+      </section>
     </main>
   </div>
 </template>
