@@ -129,7 +129,7 @@ const handleLogin = (payload) => {
   isAuthenticated.value = true;
   actionMessage.value = payload?.lastLoginIp
     ? `登录成功，上次登录 IP：${payload.lastLoginIp}`
-    : '登录成功';
+    : '登录成功，这是首次登录记录。';
   refreshCameras();
 };
 

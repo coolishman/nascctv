@@ -37,16 +37,17 @@ public class AuthService {
         );
         User user = userMapper.findByUsername(authentication.getName())
             .orElseThrow(() -> new IllegalStateException("User not found"));
+        String previousLoginIp = user.getLastLoginIp();
         user.setLastLoginIp(loginIp);
         userMapper.updateLastLoginIp(user);
         String token = jwtService.generateToken(user.getUsername(), user.getRole());
-        return new AuthResponse(token, "Bearer", user.getLastLoginIp());
+        return new AuthResponse(token, "Bearer", previousLoginIp);
     }
 
     public AuthResponse register(RegisterRequest request) {
         User user = new User(null, request.username(), passwordEncoder.encode(request.password()), "USER", null, null);
         userMapper.insert(user);
         String token = jwtService.generateToken(user.getUsername(), user.getRole());
-        return new AuthResponse(token, "Bearer", user.getLastLoginIp());
+        return new AuthResponse(token, "Bearer", null);
     }
 }
