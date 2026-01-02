@@ -2,6 +2,7 @@
   <div class="app">
     <TopBar @navigate="handleNavigate" />
     <main class="content" v-if="view === 'dashboard'">
+      <div v-if="errorMessage" class="error-banner">{{ errorMessage }}</div>
       <section class="hero">
         <div>
           <p class="eyebrow">网络摄像头管理系统</p>
@@ -36,6 +37,7 @@
       </section>
     </main>
     <main class="content wall-content" v-else>
+      <div v-if="errorMessage" class="error-banner dark">{{ errorMessage }}</div>
       <TVWall :wall="wall" />
     </main>
   </div>
@@ -60,14 +62,23 @@ const metrics = reactive({
   offline: 0,
   alerts: 0
 });
+const errorMessage = ref('');
 
 const refreshCameras = async () => {
-  cameras.value = await fetchCameras();
-  metrics.online = cameras.value.filter((camera) => camera.status === 'online').length;
-  metrics.offline = cameras.value.filter((camera) => camera.status === 'offline').length;
-  metrics.alerts = Math.max(1, Math.floor(cameras.value.length / 3));
-  recordings.value = await fetchRecordings(cameras.value);
-  wall.value = await fetchVideoWall(1);
+  errorMessage.value = '';
+  try {
+    cameras.value = await fetchCameras();
+    metrics.online = cameras.value.filter((camera) => camera.status === 'online').length;
+    metrics.offline = cameras.value.filter((camera) => camera.status === 'offline').length;
+    metrics.alerts = Math.max(1, Math.floor(cameras.value.length / 3));
+    recordings.value = await fetchRecordings(cameras.value);
+    wall.value = await fetchVideoWall(1);
+  } catch (error) {
+    errorMessage.value = '无法连接后端服务，请检查数据库与接口配置。';
+    cameras.value = [];
+    recordings.value = [];
+    wall.value = {};
+  }
 };
 
 const handleLogin = () => {
@@ -77,9 +88,13 @@ const handleLogin = () => {
 const handleNavigate = (target) => {
   view.value = target;
   if (target === 'wall' && !wall.value.tiles?.length) {
-    fetchVideoWall(1).then((data) => {
-      wall.value = data;
-    });
+    fetchVideoWall(1)
+      .then((data) => {
+        wall.value = data;
+      })
+      .catch(() => {
+        errorMessage.value = '无法加载电视墙数据，请检查后端服务。';
+      });
   }
 };
 

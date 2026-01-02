@@ -363,6 +363,21 @@ button.ghost {
   color: #344054;
 }
 
+.error-banner {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fef3f2;
+  color: #b42318;
+  border: 1px solid #fecdca;
+  font-size: 14px;
+}
+
+.error-banner.dark {
+  background: rgba(127, 29, 29, 0.2);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #fecaca;
+}
+
 .wall-content {
   background: #0b1220;
   color: #f8fafc;
@@ -437,6 +452,12 @@ button.ghost {
   font-size: 11px;
   color: #94a3b8;
   word-break: break-all;
+}
+
+.tv-wall .empty-state {
+  margin-top: 16px;
+  color: #cbd5f5;
+  font-size: 14px;
 }
 
 @media (max-width: 900px) {
