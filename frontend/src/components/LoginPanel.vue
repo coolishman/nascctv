@@ -12,7 +12,7 @@
         <input v-model="form.password" type="password" placeholder="请输入密码" required />
       </label>
       <button class="primary" type="submit">登录</button>
-      <p class="hint">默认账号由管理员创建，支持 JWT 认证。</p>
+      <p class="hint">默认账号：admin / admi，支持 JWT 认证。</p>
       <p v-if="message" class="message">{{ message }}</p>
     </form>
   </div>

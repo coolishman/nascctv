@@ -48,7 +48,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         User admin = userMapper.findByUsername("admin").orElseGet(() -> {
-            User user = new User(null, "admin", passwordEncoder.encode("admin"), "ADMIN", null, null);
+            User user = new User(null, "admin", passwordEncoder.encode("admi"), "ADMIN", null, null);
             userMapper.insert(user);
             return user;
         });
