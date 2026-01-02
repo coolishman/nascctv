@@ -1,0 +1,28 @@
+package com.nascctv.controller;
+
+import com.nascctv.dto.VideoWallResponse;
+import com.nascctv.security.UserPrincipal;
+import com.nascctv.service.VideoWallService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/walls")
+public class VideoWallController {
+    private final VideoWallService videoWallService;
+
+    public VideoWallController(VideoWallService videoWallService) {
+        this.videoWallService = videoWallService;
+    }
+
+    @GetMapping("/{wallId}")
+    public VideoWallResponse getWall(
+        @PathVariable Long wallId,
+        @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return videoWallService.getWall(wallId, principal);
+    }
+}
