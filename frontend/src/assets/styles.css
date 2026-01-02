@@ -387,21 +387,24 @@ button.ghost {
 
 .wall-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 16px;
+  align-items: stretch;
 }
 
 .wall-tile {
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 64, 175, 0.7));
   border-radius: 16px;
   border: 1px solid rgba(148, 163, 184, 0.3);
-  min-height: 200px;
+  aspect-ratio: 16 / 9;
   position: relative;
   overflow: hidden;
+  display: flex;
 }
 
 .wall-video {
   height: 100%;
+  width: 100%;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -447,6 +450,6 @@ button.ghost {
   }
 
   .wall-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }

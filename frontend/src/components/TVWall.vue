@@ -16,7 +16,6 @@
         v-for="tile in tiles"
         :key="tile.id"
         class="wall-tile"
-        :style="tileStyle(tile)"
       >
         <div class="wall-video">
           <span class="live">LIVE</span>
@@ -87,10 +86,6 @@ const togglePlay = () => {
   isPlaying.value = !isPlaying.value;
 };
 
-const tileStyle = (tile) => ({
-  gridRow: `span ${tile.rowSpan || 1}`,
-  gridColumn: `span ${tile.colSpan || 1}`
-});
 
 watch(tiles, () => {
   initRotation();
