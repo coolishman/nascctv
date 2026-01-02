@@ -46,7 +46,6 @@ CREATE TABLE IF NOT EXISTS recordings (
 );
 
 
-
 CREATE TABLE IF NOT EXISTS user_camera_permissions (
   user_id BIGINT NOT NULL,
   camera_id BIGINT NOT NULL,
@@ -85,5 +84,4 @@ CREATE TABLE IF NOT EXISTS wall_tile_channels (
   CONSTRAINT fk_wall_tile_channels_tile FOREIGN KEY (tile_id) REFERENCES wall_tiles(id) ON DELETE CASCADE,
   CONSTRAINT fk_wall_tile_channels_camera FOREIGN KEY (camera_id) REFERENCES cameras(id) ON DELETE CASCADE
 );
-
 
