@@ -12,52 +12,74 @@
             支持 ONVIF、RTSP、GB/T 28181 等主流协议，集中监控、统一权限、实时告警。
           </p>
         </div>
-        <LoginPanel @login-success="handleLogin" />
-      </section>
-
-      <section class="stats">
-        <StatsCard title="在线摄像头" :value="metrics.online" trend="+12%" />
-        <StatsCard title="离线摄像头" :value="metrics.offline" trend="-3%" />
-        <StatsCard title="今日告警" :value="metrics.alerts" trend="+5" />
-      </section>
-
-      <section class="cameras">
-        <div class="section-header">
-          <h2>摄像头资产概览</h2>
-          <button class="primary" @click="refreshCameras">刷新列表</button>
+        <LoginPanel v-if="!isAuthenticated" @login-success="handleLogin" />
+        <div v-else class="login-panel">
+          <h3>已登录</h3>
+          <p>当前账号已通过认证，可查看系统数据。</p>
         </div>
-        <CameraList
-          :cameras="cameras"
-          @preview="handlePreview"
-          @configure="handleConfigure"
-        />
       </section>
 
-      <section class="storage">
-        <div class="section-header">
-          <h2>存储与留存策略</h2>
-          <button class="secondary">查看存储池</button>
-        </div>
-        <RecordingList :recordings="recordings" />
+      <template v-if="isAuthenticated">
+        <section class="stats">
+          <StatsCard title="在线摄像头" :value="metrics.online" trend="+12%" />
+          <StatsCard title="离线摄像头" :value="metrics.offline" trend="-3%" />
+          <StatsCard title="今日告警" :value="metrics.alerts" trend="+5" />
+        </section>
+
+        <section class="cameras">
+          <div class="section-header">
+            <h2>摄像头资产概览</h2>
+            <button class="primary" @click="refreshCameras">刷新列表</button>
+          </div>
+          <CameraList
+            :cameras="cameras"
+            @preview="handlePreview"
+            @configure="handleConfigure"
+          />
+        </section>
+
+        <section class="storage">
+          <div class="section-header">
+            <h2>存储与留存策略</h2>
+            <button class="secondary">查看存储池</button>
+          </div>
+          <RecordingList :recordings="recordings" />
+        </section>
+      </template>
+      <section v-else class="section-card">
+        <h2>请先登录</h2>
+        <p>登录后可查看摄像头资产、电视墙和告警信息。</p>
       </section>
     </main>
     <main class="content wall-content" v-else-if="view === 'wall'">
       <div v-if="errorMessage" class="error-banner dark">{{ errorMessage }}</div>
       <div v-if="actionMessage" class="toast dark">{{ actionMessage }}</div>
-      <TVWall :wall="wall" />
+      <template v-if="isAuthenticated">
+        <TVWall :wall="wall" />
+      </template>
+      <section v-else class="section-card">
+        <h2>请先登录</h2>
+        <p>登录后可查看电视墙内容。</p>
+      </section>
     </main>
     <main class="content" v-else-if="view === 'alerts'">
       <section class="section-card">
         <h2>告警中心</h2>
-        <p>暂无告警数据，请检查摄像头状态或网络连接。</p>
-        <button class="secondary" @click="handleRefreshAlerts">刷新告警</button>
+        <p v-if="isAuthenticated">暂无告警数据，请检查摄像头状态或网络连接。</p>
+        <p v-else>登录后可查看告警信息。</p>
+        <button class="secondary" @click="handleRefreshAlerts" :disabled="!isAuthenticated">
+          刷新告警
+        </button>
       </section>
     </main>
     <main class="content" v-else>
       <section class="section-card">
         <h2>系统设置</h2>
-        <p>在这里管理存储策略、用户权限与系统参数。</p>
-        <button class="secondary" @click="handleOpenSettings">打开设置</button>
+        <p v-if="isAuthenticated">在这里管理存储策略、用户权限与系统参数。</p>
+        <p v-else>登录后可查看系统设置。</p>
+        <button class="secondary" @click="handleOpenSettings" :disabled="!isAuthenticated">
+          打开设置
+        </button>
       </section>
     </main>
   </div>
@@ -77,6 +99,7 @@ const cameras = ref([]);
 const recordings = ref([]);
 const wall = ref({});
 const view = ref('dashboard');
+const isAuthenticated = ref(Boolean(localStorage.getItem('nascctv_token')));
 const metrics = reactive({
   online: 0,
   offline: 0,
@@ -102,7 +125,11 @@ const refreshCameras = async () => {
   }
 };
 
-const handleLogin = () => {
+const handleLogin = (payload) => {
+  isAuthenticated.value = true;
+  actionMessage.value = payload?.lastLoginIp
+    ? `登录成功，上次登录 IP：${payload.lastLoginIp}`
+    : '登录成功';
   refreshCameras();
 };
 
@@ -141,6 +168,8 @@ const handleOpenSettings = () => {
 };
 
 onMounted(() => {
-  refreshCameras();
+  if (isAuthenticated.value) {
+    refreshCameras();
+  }
 });
 </script>

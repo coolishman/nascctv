@@ -18,7 +18,7 @@ public class UserService {
     }
 
     public User register(String username, String password) {
-        User user = new User(null, username, passwordEncoder.encode(password), "USER", null);
+        User user = new User(null, username, passwordEncoder.encode(password), "USER", null, null);
         userMapper.insert(user);
         return user;
     }

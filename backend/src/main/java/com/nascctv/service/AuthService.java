@@ -31,20 +31,22 @@ public class AuthService {
         this.userMapper = userMapper;
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request, String loginIp) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.username(), request.password())
         );
         User user = userMapper.findByUsername(authentication.getName())
             .orElseThrow(() -> new IllegalStateException("User not found"));
+        user.setLastLoginIp(loginIp);
+        userMapper.updateLastLoginIp(user);
         String token = jwtService.generateToken(user.getUsername(), user.getRole());
-        return new AuthResponse(token, "Bearer");
+        return new AuthResponse(token, "Bearer", user.getLastLoginIp());
     }
 
     public AuthResponse register(RegisterRequest request) {
-        User user = new User(null, request.username(), passwordEncoder.encode(request.password()), "USER", null);
+        User user = new User(null, request.username(), passwordEncoder.encode(request.password()), "USER", null, null);
         userMapper.insert(user);
         String token = jwtService.generateToken(user.getUsername(), user.getRole());
-        return new AuthResponse(token, "Bearer");
+        return new AuthResponse(token, "Bearer", user.getLastLoginIp());
     }
 }

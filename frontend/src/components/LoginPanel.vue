@@ -31,9 +31,9 @@ const message = ref('');
 
 const submit = async () => {
   try {
-    await login(form.username, form.password);
+    const response = await login(form.username, form.password);
     message.value = '登录成功，正在刷新资产...';
-    emit('login-success');
+    emit('login-success', { lastLoginIp: response.lastLoginIp });
   } catch (error) {
     message.value = '登录失败，请检查账号或网络连接。';
   }

@@ -5,6 +5,7 @@ import com.nascctv.dto.LoginRequest;
 import com.nascctv.dto.RegisterRequest;
 import com.nascctv.service.AuthService;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +26,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
-        return authService.login(request);
+    public AuthResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        String loginIp = httpRequest.getRemoteAddr();
+        return authService.login(request, loginIp);
     }
 }

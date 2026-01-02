@@ -7,16 +7,18 @@ public class User {
     private String username;
     private String passwordHash;
     private String role;
+    private String lastLoginIp;
     private Instant createdAt;
 
     public User() {
     }
 
-    public User(Long id, String username, String passwordHash, String role, Instant createdAt) {
+    public User(Long id, String username, String passwordHash, String role, String lastLoginIp, Instant createdAt) {
         this.id = id;
         this.username = username;
         this.passwordHash = passwordHash;
         this.role = role;
+        this.lastLoginIp = lastLoginIp;
         this.createdAt = createdAt;
     }
 
@@ -50,6 +52,14 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getLastLoginIp() {
+        return lastLoginIp;
+    }
+
+    public void setLastLoginIp(String lastLoginIp) {
+        this.lastLoginIp = lastLoginIp;
     }
 
     public Instant getCreatedAt() {
