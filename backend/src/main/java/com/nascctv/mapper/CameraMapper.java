@@ -24,6 +24,19 @@ public interface CameraMapper {
     int countCameras();
 
     @Select("""
+        <script>
+        SELECT id, name, protocol, vendor, model, auth_type, stream_url, status, location, created_at
+        FROM cameras
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        ORDER BY id
+        </script>
+        """)
+    List<Camera> findByIds(List<Long> ids);
+
+    @Select("""
         SELECT id, name, protocol, vendor, model, auth_type, stream_url, status, location, created_at
         FROM cameras
         WHERE id = #{id}

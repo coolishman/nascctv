@@ -3,6 +3,8 @@ package com.nascctv.service;
 import com.nascctv.dto.CameraPreview;
 import com.nascctv.dto.VideoWallResponse;
 import com.nascctv.dto.VideoWallTileResponse;
+import com.nascctv.dto.VideoWallUpdateRequest;
+import com.nascctv.dto.WallTileUpdateRequest;
 import com.nascctv.mapper.CameraMapper;
 import com.nascctv.mapper.UserCameraPermissionMapper;
 import com.nascctv.mapper.UserMapper;
@@ -57,12 +59,7 @@ public class VideoWallService {
             .map(GrantedAuthority::getAuthority)
             .anyMatch(authority -> authority.equals("ROLE_ADMIN"));
 
-        Set<Long> allowedCameraIds = null;
-        if (!isAdmin) {
-            User user = userMapper.findByUsername(principal.getUsername())
-                .orElseThrow(() -> new IllegalStateException("User not found"));
-            allowedCameraIds = Set.copyOf(userCameraPermissionMapper.findCameraIdsByUserId(user.getId()));
-        }
+        Set<Long> allowedCameraIds = isAdmin ? null : loadAllowedCameraIds(principal);
 
         List<WallTile> tiles = wallTileMapper.findByWallId(wallId);
         Map<Long, List<CameraPreview>> playlists = wallTileChannelMapper.findChannelsByWallId(wallId).stream()
@@ -90,18 +87,24 @@ public class VideoWallService {
             }
 
             if (allowedCameraIds != null) {
+                Set<Long> allowedCameraIdsFinal = allowedCameraIds;
                 playlist = playlist.stream()
-                    .filter(camera -> allowedCameraIds.contains(camera.id()))
+                    .filter(camera -> allowedCameraIdsFinal.contains(camera.id()))
                     .toList();
             }
 
-            if (!playlist.isEmpty()) {
+            if (Boolean.FALSE.equals(tile.getEnabled())) {
+                playlist = List.of();
+            }
+
+            if (!playlist.isEmpty() || Boolean.FALSE.equals(tile.getEnabled())) {
                 responseTiles.add(new VideoWallTileResponse(
                     tile.getId(),
                     tile.getPosition(),
                     tile.getRowSpan(),
                     tile.getColSpan(),
                     tile.getRotationSeconds(),
+                    tile.getEnabled(),
                     playlist
                 ));
             }
@@ -115,5 +118,43 @@ public class VideoWallService {
             .collect(Collectors.toList());
 
         return new VideoWallResponse(wall.getId(), wall.getName(), wall.getDescription(), responseTiles);
+    }
+
+    public VideoWallResponse updateWall(Long wallId, VideoWallUpdateRequest request, UserPrincipal principal) {
+        VideoWall wall = videoWallMapper.findById(wallId)
+            .orElseThrow(() -> new IllegalArgumentException("Wall not found"));
+        if (request.name() != null) {
+            wall.setName(request.name());
+        }
+        if (request.description() != null) {
+            wall.setDescription(request.description());
+        }
+        videoWallMapper.update(wall);
+
+        wallTileChannelMapper.deleteByWallId(wallId);
+        wallTileMapper.deleteByWallId(wallId);
+
+        for (WallTileUpdateRequest tileRequest : request.tiles()) {
+            WallTile tile = new WallTile(
+                null,
+                wallId,
+                tileRequest.cameraId(),
+                tileRequest.position(),
+                tileRequest.rowSpan(),
+                tileRequest.colSpan(),
+                tileRequest.rotationSeconds(),
+                tileRequest.enabled(),
+                null
+            );
+            wallTileMapper.insert(tile);
+        }
+
+        return getWall(wallId, principal);
+    }
+
+    private Set<Long> loadAllowedCameraIds(UserPrincipal principal) {
+        User user = userMapper.findByUsername(principal.getUsername())
+            .orElseThrow(() -> new IllegalStateException("User not found"));
+        return Set.copyOf(userCameraPermissionMapper.findCameraIdsByUserId(user.getId()));
     }
 }
