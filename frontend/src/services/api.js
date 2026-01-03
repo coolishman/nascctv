@@ -21,46 +21,8 @@ export const login = async (username, password) => {
 };
 
 export const fetchCameras = async () => {
-  try {
-    const response = await api.get('/cameras');
-    return response.data;
-  } catch (error) {
-    return [
-      {
-        id: 1,
-        name: '园区南门高清枪机',
-        protocol: 'ONVIF',
-        vendor: 'Hikvision',
-        model: 'DS-2CD2T',
-        authType: 'DIGEST',
-        streamUrl: 'rtsp://10.0.0.12/stream1',
-        status: 'online',
-        location: '南门出入口'
-      },
-      {
-        id: 2,
-        name: '停车场球机',
-        protocol: 'RTSP',
-        vendor: 'Dahua',
-        model: 'DH-SD',
-        authType: 'BASIC',
-        streamUrl: 'rtsp://10.0.0.21/stream1',
-        status: 'offline',
-        location: '地下停车场'
-      },
-      {
-        id: 3,
-        name: '仓库全景',
-        protocol: 'GB/T 28181',
-        vendor: '通用设备',
-        model: 'GB28181',
-        authType: 'TOKEN',
-        streamUrl: 'sip:34020000001320000001@10.0.0.30',
-        status: 'online',
-        location: '仓储区'
-      }
-    ];
-  }
+  const response = await api.get('/cameras');
+  return response.data;
 };
 
 export const fetchRecordings = async (cameraList = []) => {
@@ -84,7 +46,37 @@ export const fetchVideoWall = async (wallId) => {
   return response.data;
 };
 
+export const updateVideoWall = async (wallId, payload) => {
+  const response = await api.put(`/walls/${wallId}`, payload);
+  return response.data;
+};
+
+export const fetchSettings = async () => {
+  const response = await api.get('/settings');
+  return response.data;
+};
+
+export const updateSettings = async (payload) => {
+  const response = await api.put('/settings', payload);
+  return response.data;
+};
+
 export const createCamera = async (payload) => {
   const response = await api.post('/cameras', payload);
+  return response.data;
+};
+
+export const updateCamera = async (id, payload) => {
+  const response = await api.put(`/cameras/${id}`, payload);
+  return response.data;
+};
+
+export const deleteCamera = async (id) => {
+  const response = await api.delete(`/cameras/${id}`);
+  return response.data;
+};
+
+export const probeCamera = async (id) => {
+  const response = await api.post(`/cameras/${id}/probe`);
   return response.data;
 };
