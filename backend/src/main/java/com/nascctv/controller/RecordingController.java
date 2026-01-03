@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/recordings")
+@RequestMapping({"/api/recordings", "/recordings"})
 public class RecordingController {
     private final RecordingService recordingService;
 

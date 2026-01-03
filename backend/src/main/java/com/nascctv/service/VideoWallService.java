@@ -122,46 +122,6 @@ public class VideoWallService {
         return new VideoWallResponse(wall.getId(), wall.getName(), wall.getDescription(), responseTiles);
     }
 
-    public VideoWallResponse updateWall(Long wallId, VideoWallUpdateRequest request, UserPrincipal principal) {
-        VideoWall wall = videoWallMapper.findById(wallId)
-            .orElseThrow(() -> new IllegalArgumentException("Wall not found"));
-        if (request.name() != null) {
-            wall.setName(request.name());
-        }
-        if (request.description() != null) {
-            wall.setDescription(request.description());
-        }
-        videoWallMapper.update(wall);
-
-        wallTileChannelMapper.deleteByWallId(wallId);
-        wallTileMapper.deleteByWallId(wallId);
-
-        for (WallTileUpdateRequest tileRequest : request.tiles()) {
-            WallTile tile = new WallTile(
-                null,
-                wallId,
-                tileRequest.cameraId(),
-                tileRequest.position(),
-                tileRequest.rowSpan(),
-                tileRequest.colSpan(),
-                tileRequest.rotationSeconds(),
-                tileRequest.enabled(),
-                null
-            );
-            wallTileMapper.insert(tile);
-        }
-
-        return getWall(wallId, principal);
-    }
-
-    public VideoWallResponse updateWall(Long wallId, VideoWallUpdateRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof UserPrincipal principal)) {
-            throw new IllegalStateException("User principal not found");
-        }
-        return updateWall(wallId, request, principal);
-    }
-
     private Set<Long> loadAllowedCameraIds(UserPrincipal principal) {
         User user = userMapper.findByUsername(principal.getUsername())
             .orElseThrow(() -> new IllegalStateException("User not found"));

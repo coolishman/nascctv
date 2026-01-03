@@ -30,7 +30,6 @@
         <button class="secondary" @click="$emit('preview', camera)">预览</button>
         <button class="ghost" @click="$emit('configure', camera)">配置</button>
         <button class="ghost" @click="$emit('delete', camera)">删除</button>
-        <button class="ghost" @click="$emit('probe', camera)">检测</button>
       </div>
     </article>
   </div>
@@ -44,5 +43,5 @@ defineProps({
   }
 });
 
-defineEmits(['preview', 'configure', 'delete', 'probe']);
+defineEmits(['preview', 'configure', 'delete']);
 </script>

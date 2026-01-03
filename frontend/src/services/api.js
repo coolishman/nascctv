@@ -46,11 +46,6 @@ export const fetchVideoWall = async (wallId) => {
   return response.data;
 };
 
-export const updateVideoWall = async (wallId, payload) => {
-  const response = await api.put(`/walls/${wallId}`, payload);
-  return response.data;
-};
-
 export const fetchSettings = async () => {
   const response = await api.get('/settings');
   return response.data;
@@ -73,10 +68,5 @@ export const updateCamera = async (id, payload) => {
 
 export const deleteCamera = async (id) => {
   const response = await api.delete(`/cameras/${id}`);
-  return response.data;
-};
-
-export const probeCamera = async (id) => {
-  const response = await api.post(`/cameras/${id}/probe`);
   return response.data;
 };
