@@ -20,7 +20,11 @@
         <div class="wall-video">
           <span class="live">LIVE</span>
           <div class="wall-info">
-            <template v-if="currentCamera(tile)">
+            <template v-if="!isTileActive(tile)">
+              <h4>通道已暂停</h4>
+              <p>点击播放恢复</p>
+            </template>
+            <template v-else-if="currentCamera(tile)">
               <h4>{{ currentCamera(tile)?.name }}</h4>
               <p>{{ currentCamera(tile)?.protocol }}</p>
               <p class="stream">{{ currentCamera(tile)?.streamUrl }}</p>
@@ -30,6 +34,9 @@
               <p>请联系管理员配置权限</p>
             </template>
           </div>
+          <button class="ghost" @click="toggleTile(tile)">
+            {{ isTileActive(tile) ? '暂停' : '播放' }}
+          </button>
         </div>
       </article>
     </div>
@@ -52,6 +59,7 @@ const rotationState = reactive({
   indices: {},
   elapsed: {}
 });
+const pausedTiles = reactive({});
 const isPlaying = ref(true);
 let timerId = null;
 
@@ -59,12 +67,15 @@ const initRotation = () => {
   tiles.value.forEach((tile) => {
     rotationState.indices[tile.id] = 0;
     rotationState.elapsed[tile.id] = 0;
+    pausedTiles[tile.id] = tile.enabled === false;
   });
 };
 
+const isTileActive = (tile) => !pausedTiles[tile.id];
+
 const currentCamera = (tile) => {
   const playlist = tile.playlist || [];
-  if (!playlist.length) {
+  if (!playlist.length || !isTileActive(tile)) {
     return null;
   }
   const index = rotationState.indices[tile.id] || 0;
@@ -73,6 +84,9 @@ const currentCamera = (tile) => {
 
 const rotate = () => {
   tiles.value.forEach((tile) => {
+    if (!isTileActive(tile)) {
+      return;
+    }
     if (!tile.rotationSeconds || tile.rotationSeconds <= 0) {
       return;
     }
@@ -99,6 +113,10 @@ const startTimer = () => {
 
 const togglePlay = () => {
   isPlaying.value = !isPlaying.value;
+};
+
+const toggleTile = (tile) => {
+  pausedTiles[tile.id] = !isTileActive(tile);
 };
 
 

@@ -83,6 +83,11 @@ public class CameraService {
         return camera;
     }
 
+    public Camera getCamera(Long id) {
+        return cameraMapper.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Camera not found"));
+    }
+
     public void deleteCamera(Long id) {
         cameraMapper.delete(id);
     }

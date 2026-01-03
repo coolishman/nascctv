@@ -2,9 +2,11 @@ package com.nascctv.controller;
 
 import com.nascctv.dto.CameraRequest;
 import com.nascctv.dto.CameraResponse;
+import com.nascctv.dto.ProtocolProbeResponse;
 import com.nascctv.model.Camera;
 import com.nascctv.security.UserPrincipal;
 import com.nascctv.service.CameraService;
+import com.nascctv.service.ProtocolProbeService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,9 +25,11 @@ import java.util.List;
 @RequestMapping({"/api/cameras", "/cameras"})
 public class CameraController {
     private final CameraService cameraService;
+    private final ProtocolProbeService protocolProbeService;
 
-    public CameraController(CameraService cameraService) {
+    public CameraController(CameraService cameraService, ProtocolProbeService protocolProbeService) {
         this.cameraService = cameraService;
+        this.protocolProbeService = protocolProbeService;
     }
 
     @GetMapping
@@ -49,6 +53,14 @@ public class CameraController {
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteCamera(@PathVariable("id") Long id) {
         cameraService.deleteCamera(id);
+    }
+
+    @PostMapping("/{id}/probe")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ProtocolProbeResponse probeCamera(@PathVariable("id") Long id) {
+        Camera camera = cameraService.getCamera(id);
+        ProtocolProbeService.ProbeResult result = protocolProbeService.probe(camera);
+        return new ProtocolProbeResponse(result.success(), result.message(), result.elapsedMs());
     }
 
     private static CameraResponse toResponse(Camera camera) {

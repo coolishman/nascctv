@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS wall_tiles (
   row_span INT NOT NULL DEFAULT 1,
   col_span INT NOT NULL DEFAULT 1,
   rotation_seconds INT NOT NULL DEFAULT 0,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_wall_tiles_wall FOREIGN KEY (wall_id) REFERENCES video_walls(id) ON DELETE CASCADE,
   CONSTRAINT fk_wall_tiles_camera FOREIGN KEY (camera_id) REFERENCES cameras(id) ON DELETE SET NULL

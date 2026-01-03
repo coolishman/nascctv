@@ -3,6 +3,8 @@ package com.nascctv.service;
 import com.nascctv.dto.CameraPreview;
 import com.nascctv.dto.VideoWallResponse;
 import com.nascctv.dto.VideoWallTileResponse;
+import com.nascctv.dto.VideoWallUpdateRequest;
+import com.nascctv.dto.WallTileUpdateRequest;
 import com.nascctv.mapper.CameraMapper;
 import com.nascctv.mapper.UserCameraPermissionMapper;
 import com.nascctv.mapper.UserMapper;
@@ -91,13 +93,18 @@ public class VideoWallService {
                     .toList();
             }
 
-            if (!playlist.isEmpty()) {
+            if (Boolean.FALSE.equals(tile.getEnabled())) {
+                playlist = List.of();
+            }
+
+            if (!playlist.isEmpty() || Boolean.FALSE.equals(tile.getEnabled())) {
                 responseTiles.add(new VideoWallTileResponse(
                     tile.getId(),
                     tile.getPosition(),
                     tile.getRowSpan(),
                     tile.getColSpan(),
                     tile.getRotationSeconds(),
+                    tile.getEnabled(),
                     playlist
                 ));
             }

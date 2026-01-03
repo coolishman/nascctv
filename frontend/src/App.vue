@@ -79,6 +79,12 @@
       <div v-if="errorMessage" class="error-banner dark">{{ errorMessage }}</div>
       <div v-if="actionMessage" class="toast dark">{{ actionMessage }}</div>
       <template v-if="isAuthenticated">
+        <div class="section-header">
+          <h2>电视墙</h2>
+          <button class="secondary" @click="handleOpenWallConfig" :disabled="!isAuthenticated">
+            配置电视墙
+          </button>
+        </div>
         <TVWall :wall="wall" />
       </template>
     </main>
@@ -252,7 +258,13 @@ const actionMessage = ref('');
 const showDeviceModal = ref(false);
 const showPreviewModal = ref(false);
 const showSettingsModal = ref(false);
+const showWallConfigModal = ref(false);
 const selectedCamera = ref(null);
+const wallForm = reactive({
+  name: '',
+  description: ''
+});
+const wallTiles = ref([]);
 const deviceForm = reactive({
   name: '',
   protocol: 'RTSP',
