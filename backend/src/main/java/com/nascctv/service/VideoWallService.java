@@ -16,7 +16,9 @@ import com.nascctv.model.User;
 import com.nascctv.model.VideoWall;
 import com.nascctv.model.WallTile;
 import com.nascctv.security.UserPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

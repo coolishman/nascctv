@@ -92,9 +92,3 @@ CREATE TABLE IF NOT EXISTS wall_tile_channels (
   CONSTRAINT fk_wall_tile_channels_camera FOREIGN KEY (camera_id) REFERENCES cameras(id) ON DELETE CASCADE
 );
 
-DROP INDEX IF EXISTS idx_permissions_user_id ON user_camera_permissions;
-CREATE INDEX idx_permissions_user_id ON user_camera_permissions(user_id);
-DROP INDEX IF EXISTS idx_wall_tiles_wall_id ON wall_tiles;
-CREATE INDEX idx_wall_tiles_wall_id ON wall_tiles(wall_id);
-DROP INDEX IF EXISTS idx_wall_tile_channels_tile_id ON wall_tile_channels;
-CREATE INDEX idx_wall_tile_channels_tile_id ON wall_tile_channels(tile_id);
