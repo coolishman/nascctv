@@ -4,6 +4,7 @@
       :is-authenticated="isAuthenticated"
       @navigate="handleNavigate"
       @new-device="handleNewDevice"
+      @logout="handleLogout"
     />
     <main class="content" v-if="view === 'dashboard'">
       <div v-if="errorMessage" class="error-banner">{{ errorMessage }}</div>
@@ -312,6 +313,17 @@ const handleLogin = (payload) => {
     ? `登录成功，上次登录 IP：${payload.lastLoginIp}`
     : '登录成功，这是首次登录记录。';
   refreshCameras();
+};
+
+const handleLogout = () => {
+  localStorage.removeItem('nascctv_token');
+  isAuthenticated.value = false;
+  view.value = 'dashboard';
+  cameras.value = [];
+  recordings.value = [];
+  wall.value = {};
+  alertItems.value = [];
+  actionMessage.value = '已退出登录';
 };
 
 const handleNavigate = (target) => {

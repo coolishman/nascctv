@@ -14,9 +14,14 @@
       <button class="link" @click="$emit('navigate', 'alerts')">告警中心</button>
       <button class="link" @click="$emit('navigate', 'settings')">系统设置</button>
     </nav>
-    <button class="secondary" :disabled="!isAuthenticated" @click="$emit('new-device')">
-      新建设备
-    </button>
+    <div class="topbar-actions">
+      <button class="secondary" :disabled="!isAuthenticated" @click="$emit('new-device')">
+        新建设备
+      </button>
+      <button class="ghost" v-if="isAuthenticated" @click="$emit('logout')">
+        退出登录
+      </button>
+    </div>
   </header>
 </template>
 
@@ -27,5 +32,5 @@ defineProps({
     default: false
   }
 });
-defineEmits(['navigate', 'new-device']);
+defineEmits(['navigate', 'new-device', 'logout']);
 </script>
