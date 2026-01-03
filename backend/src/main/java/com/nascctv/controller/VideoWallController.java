@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/walls")
+@RequestMapping({"/api/walls", "/walls"})
 public class VideoWallController {
     private final VideoWallService videoWallService;
 
@@ -35,8 +35,9 @@ public class VideoWallController {
     @PreAuthorize("hasRole('ADMIN')")
     public VideoWallResponse updateWall(
         @PathVariable("wallId") Long wallId,
-        @Valid @RequestBody VideoWallUpdateRequest request
+        @Valid @RequestBody VideoWallUpdateRequest request,
+        @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return videoWallService.updateWall(wallId, request);
+        return videoWallService.updateWall(wallId, request, principal);
     }
 }
