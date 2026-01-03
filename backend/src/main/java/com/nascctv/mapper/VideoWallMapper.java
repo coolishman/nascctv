@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.Optional;
 
@@ -26,4 +27,12 @@ public interface VideoWallMapper {
         """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(VideoWall wall);
+
+    @Update("""
+        UPDATE video_walls
+        SET name = #{name},
+            description = #{description}
+        WHERE id = #{id}
+        """)
+    int update(VideoWall wall);
 }
