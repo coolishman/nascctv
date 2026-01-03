@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/cameras")
+@RequestMapping({"/api/cameras", "/cameras"})
 public class CameraController {
     private final CameraService cameraService;
     private final ProtocolProbeService protocolProbeService;

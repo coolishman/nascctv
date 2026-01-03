@@ -92,14 +92,6 @@ CREATE TABLE IF NOT EXISTS wall_tile_channels (
   CONSTRAINT fk_wall_tile_channels_camera FOREIGN KEY (camera_id) REFERENCES cameras(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS system_settings (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  retention_days INT NOT NULL DEFAULT 30,
-  alert_sound BOOLEAN NOT NULL DEFAULT TRUE,
-  auto_rotate BOOLEAN NOT NULL DEFAULT TRUE,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
 DROP INDEX IF EXISTS idx_permissions_user_id ON user_camera_permissions;
 CREATE INDEX idx_permissions_user_id ON user_camera_permissions(user_id);
 DROP INDEX IF EXISTS idx_wall_tiles_wall_id ON wall_tiles;
