@@ -10,6 +10,7 @@ public class WallTile {
     private Integer rowSpan;
     private Integer colSpan;
     private Integer rotationSeconds;
+    private Boolean enabled;
     private Instant createdAt;
 
     public WallTile() {
@@ -23,6 +24,7 @@ public class WallTile {
         Integer rowSpan,
         Integer colSpan,
         Integer rotationSeconds,
+        Boolean enabled,
         Instant createdAt
     ) {
         this.id = id;
@@ -32,6 +34,7 @@ public class WallTile {
         this.rowSpan = rowSpan;
         this.colSpan = colSpan;
         this.rotationSeconds = rotationSeconds;
+        this.enabled = enabled;
         this.createdAt = createdAt;
     }
 
@@ -89,6 +92,14 @@ public class WallTile {
 
     public void setRotationSeconds(Integer rotationSeconds) {
         this.rotationSeconds = rotationSeconds;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 
     public Instant getCreatedAt() {

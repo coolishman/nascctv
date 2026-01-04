@@ -8,5 +8,6 @@ public record VideoWallTileResponse(
     Integer rowSpan,
     Integer colSpan,
     Integer rotationSeconds,
+    Boolean enabled,
     List<CameraPreview> playlist
 ) {}

@@ -2,6 +2,7 @@ package com.nascctv.mapper;
 
 import com.nascctv.dto.CameraPreview;
 import com.nascctv.model.WallTileChannel;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -31,6 +32,14 @@ public interface WallTileChannelMapper {
         """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(WallTileChannel channel);
+
+    @Delete("""
+        DELETE wtc
+        FROM wall_tile_channels wtc
+        JOIN wall_tiles wt ON wt.id = wtc.tile_id
+        WHERE wt.wall_id = #{wallId}
+        """)
+    int deleteByWallId(Long wallId);
 
     record WallTileChannelView(
         Long tileId,
