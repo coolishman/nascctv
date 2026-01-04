@@ -183,12 +183,57 @@
         <div class="preview-body">
           <p>{{ selectedCamera?.name }}</p>
           <p class="stream">{{ selectedCamera?.streamUrl }}</p>
+          <div class="preview-support">
+            <div class="support-header">
+              <h4>协议接入状态</h4>
+              <span>ONVIF / RTSP / GB/T 28181</span>
+            </div>
+            <div class="support-grid">
+              <div class="support-card" :class="{ active: selectedCamera?.protocol === 'ONVIF' }">
+                <strong>ONVIF</strong>
+                <p>发现/鉴权/拉流由后端网关接入</p>
+              </div>
+              <div class="support-card" :class="{ active: selectedCamera?.protocol === 'RTSP' }">
+                <strong>RTSP</strong>
+                <p>建议转码为 HLS/FLV/WebRTC 供前端播放</p>
+              </div>
+              <div class="support-card" :class="{ active: selectedCamera?.protocol === 'GB/T 28181' }">
+                <strong>GB/T 28181</strong>
+                <p>通过 SIP 信令与媒体服务器推送预览流</p>
+              </div>
+            </div>
+            <div class="stream-options">
+              <div class="stream-header">
+                <h4>可用预览流</h4>
+                <span v-if="previewLoading">加载中...</span>
+              </div>
+              <div v-if="previewStreams.length" class="stream-list">
+                <button
+                  v-for="stream in previewStreams"
+                  :key="stream.id"
+                  class="stream-item"
+                  :class="{ active: selectedPreviewStream?.id === stream.id }"
+                  @click="selectPreviewStream(stream)"
+                >
+                  <div>
+                    <strong>{{ stream.name }}</strong>
+                    <p>{{ stream.streamType }} · {{ stream.codec || '未知编码' }}</p>
+                  </div>
+                  <span>{{ stream.streamUrl }}</span>
+                </button>
+              </div>
+              <p v-else class="hint">
+                暂无可用预览流，请在后端配置转码/网关输出 HTTP/HTTPS 流地址。
+              </p>
+            </div>
+          </div>
           <p v-if="previewMessage" class="message">{{ previewMessage }}</p>
+          <p v-if="previewSourceLabel" class="hint">当前播放来源：{{ previewSourceLabel }}</p>
           <video
-            v-if="canPlayPreview"
+            v-if="previewSource"
             ref="previewPlayer"
             class="preview-player"
-            :src="selectedCamera?.streamUrl"
+            :src="previewSource"
             controls
             autoplay
             muted
@@ -250,6 +295,7 @@ import {
   createCamera,
   deleteCamera,
   fetchCameras,
+  fetchCameraStreams,
   fetchRecordings,
   fetchSettings,
   fetchVideoWall,
@@ -295,12 +341,38 @@ const settings = reactive({
   alertSound: true,
   autoRotate: true
 });
+const previewMessage = ref('');
+const previewStreams = ref([]);
+const previewLoading = ref(false);
+const selectedPreviewStream = ref(null);
 
 let previewMessageTimer = null;
 
 const canPlayPreview = computed(() => {
   const url = selectedCamera.value?.streamUrl || '';
   return url.startsWith('http://') || url.startsWith('https://');
+});
+
+const isPlayableUrl = (url) => url.startsWith('http://') || url.startsWith('https://');
+
+const previewSource = computed(() => {
+  if (canPlayPreview.value) {
+    return selectedCamera.value?.streamUrl || '';
+  }
+  if (selectedPreviewStream.value && isPlayableUrl(selectedPreviewStream.value.streamUrl)) {
+    return selectedPreviewStream.value.streamUrl;
+  }
+  return '';
+});
+
+const previewSourceLabel = computed(() => {
+  if (canPlayPreview.value) {
+    return '直连地址';
+  }
+  if (selectedPreviewStream.value) {
+    return `${selectedPreviewStream.value.streamType} 转码流`;
+  }
+  return '';
 });
 
 const setPreviewMessage = (message) => {
@@ -379,9 +451,35 @@ const handlePreview = (camera) => {
   selectedCamera.value = camera;
   showPreviewModal.value = true;
   previewMessage.value = '';
+  previewStreams.value = [];
+  selectedPreviewStream.value = null;
+  previewLoading.value = false;
   if (!canPlayPreview.value) {
     setPreviewMessage('当前地址不是 HTTP/HTTPS，浏览器无法直接播放。');
   }
+  if (!camera?.id) {
+    return;
+  }
+  previewLoading.value = true;
+  fetchCameraStreams(camera.id)
+    .then((streams) => {
+      previewStreams.value = streams;
+      selectedPreviewStream.value =
+        streams.find(
+          (stream) => stream.streamType === 'WEBRTC' && isPlayableUrl(stream.streamUrl)
+        ) ||
+        streams.find((stream) => isPlayableUrl(stream.streamUrl)) ||
+        null;
+      if (!canPlayPreview.value && !selectedPreviewStream.value) {
+        setPreviewMessage('未检测到可播放的 HTTP/HTTPS 流地址，请配置转码输出。');
+      }
+    })
+    .catch(() => {
+      setPreviewMessage('拉取预览流失败，请检查后端流媒体服务。');
+    })
+    .finally(() => {
+      previewLoading.value = false;
+    });
 };
 
 const handleConfigure = (camera) => {
@@ -500,6 +598,16 @@ const handleCloseModal = () => {
   showPreviewModal.value = false;
   showSettingsModal.value = false;
   actionMessage.value = '';
+  previewStreams.value = [];
+  selectedPreviewStream.value = null;
+  previewMessage.value = '';
+};
+
+const selectPreviewStream = (stream) => {
+  selectedPreviewStream.value = stream;
+  if (!isPlayableUrl(stream.streamUrl)) {
+    setPreviewMessage('该流地址非 HTTP/HTTPS，浏览器无法直接播放。');
+  }
 };
 
 onMounted(() => {
