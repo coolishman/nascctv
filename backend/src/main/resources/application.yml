@@ -19,3 +19,7 @@ security:
     issuer: nascctv
     secret: change-me-to-a-strong-secret-key
     expiration-minutes: 120
+
+media:
+  webrtc-base-url: ""
+  webrtc-preview-path: "/preview/{cameraId}"
