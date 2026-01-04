@@ -183,7 +183,20 @@
         <div class="preview-body">
           <p>{{ selectedCamera?.name }}</p>
           <p class="stream">{{ selectedCamera?.streamUrl }}</p>
-          <div class="preview-placeholder">预览窗口占位</div>
+          <p v-if="previewMessage" class="message">{{ previewMessage }}</p>
+          <video
+            v-if="canPlayPreview"
+            ref="previewPlayer"
+            class="preview-player"
+            :src="selectedCamera?.streamUrl"
+            controls
+            autoplay
+            muted
+            playsinline
+            @canplay="handlePreviewReady"
+            @error="handlePreviewError"
+          ></video>
+          <div v-else class="preview-placeholder">当前地址无法直接预览</div>
         </div>
       </div>
     </div>
@@ -226,7 +239,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref, computed } from 'vue';
 import TopBar from './components/TopBar.vue';
 import LoginPanel from './components/LoginPanel.vue';
 import CameraList from './components/CameraList.vue';
@@ -282,6 +295,23 @@ const settings = reactive({
   alertSound: true,
   autoRotate: true
 });
+
+let previewMessageTimer = null;
+
+const canPlayPreview = computed(() => {
+  const url = selectedCamera.value?.streamUrl || '';
+  return url.startsWith('http://') || url.startsWith('https://');
+});
+
+const setPreviewMessage = (message) => {
+  previewMessage.value = message;
+  if (previewMessageTimer) {
+    clearTimeout(previewMessageTimer);
+  }
+  previewMessageTimer = setTimeout(() => {
+    previewMessage.value = '';
+  }, 2000);
+};
 
 const refreshCameras = async () => {
   errorMessage.value = '';
@@ -348,6 +378,10 @@ const handlePreview = (camera) => {
   actionMessage.value = `正在预览：${camera.name}`;
   selectedCamera.value = camera;
   showPreviewModal.value = true;
+  previewMessage.value = '';
+  if (!canPlayPreview.value) {
+    setPreviewMessage('当前地址不是 HTTP/HTTPS，浏览器无法直接播放。');
+  }
 };
 
 const handleConfigure = (camera) => {
@@ -451,6 +485,14 @@ const handleSaveDevice = async () => {
   } catch (error) {
     actionMessage.value = '保存失败，请检查权限或网络连接。';
   }
+};
+
+const handlePreviewReady = () => {
+  setPreviewMessage('视频加载成功');
+};
+
+const handlePreviewError = () => {
+  setPreviewMessage('视频加载失败，请检查流地址或网络。');
 };
 
 const handleCloseModal = () => {
