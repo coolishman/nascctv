@@ -464,12 +464,7 @@ const handlePreview = (camera) => {
   fetchCameraStreams(camera.id)
     .then((streams) => {
       previewStreams.value = streams;
-      selectedPreviewStream.value =
-        streams.find(
-          (stream) => stream.streamType === 'WEBRTC' && isPlayableUrl(stream.streamUrl)
-        ) ||
-        streams.find((stream) => isPlayableUrl(stream.streamUrl)) ||
-        null;
+      selectedPreviewStream.value = streams.find((stream) => isPlayableUrl(stream.streamUrl)) || null;
       if (!canPlayPreview.value && !selectedPreviewStream.value) {
         setPreviewMessage('未检测到可播放的 HTTP/HTTPS 流地址，请配置转码输出。');
       }
