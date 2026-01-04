@@ -41,6 +41,11 @@ export const fetchRecordings = async (cameraList = []) => {
   }));
 };
 
+export const fetchCameraStreams = async (cameraId) => {
+  const response = await api.get(`/cameras/${cameraId}/streams`);
+  return response.data;
+};
+
 export const fetchVideoWall = async (wallId) => {
   const response = await api.get(`/walls/${wallId}`);
   return response.data;
